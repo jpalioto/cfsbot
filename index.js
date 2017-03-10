@@ -1,65 +1,57 @@
 var builder   = require('botbuilder');
 var restify   = require('restify');
+var _         = require('lodash');
+var specialRec = require('./app/recognizers/special.js');
 
-var connector = new builder.ChatConnector();
+var connector = new builder.ChatConnector({
+    appId: process.env.CFS_APP_ID,
+    appPassword: process.env.CFS_APP_PASSWORD
+});
 var bot       = new builder.UniversalBot(connector);
+
+
+var dialogs   = ['greeting', 'special', 'menu', 'recipe']
+    .map(d => ({
+        name: d,
+        configureDialog: require('./app/dialogs/' + d)
+    }));
 
 // LUIS Setup
 var luisKey      = '6e843ac045cb4497afa2e39230d62778';  // Dev Key
 var luisEndpoint = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/5e02a94a-8f45-498c-94c3-99e5884cd053?subscription-key=6e843ac045cb4497afa2e39230d62778&staging=true&verbose=true&q=';
-var recognizer   = new builder.LuisRecognizer(luisEndpoint);
-var intents      = new builder.IntentDialog({ recognizers: [recognizer]});
+var intents = new builder.IntentDialog({
+    recognizers: [
+        specialRec,
+        new builder.LuisRecognizer(luisEndpoint || process.env.LUIS_ENDPOINT)
+    ],
+    intentThreshold: 0.5,
+    recognizeOrder: builder.RecognizeOrder.series
+});
 
-
-bot.dialog('/', intents)
-    // Match from the hero card postbacks.
-    .matches('2bebe5f5-027c-4401-aaf6-c323a8a4c684', 'menuDialog')
-    .matches('428199ac-eecc-4921-b7f8-0578d7e9e1e5', 'recipeDialog')
-    // Start LUIS
-    .matches('Greeting', [
-        session => {
-            session.send("Welcome to CFS!");
-            var card = createHeroCard(session);
-            var msg = new builder.Message(session).addAttachment(card);
-            session.send(msg);
-        }
-    ])
-    .matches('Menu', [
-        s => { s.beginDialog('/menuDialog'); }
-    ])
-    .matches('Recipe', [
-        s => { s.beginDialog('/recipeDialog'); }
-    ])
-
-    bot.dialog('/menuDialog', 
-        [
-            s => { s.send("Menu dialog"); }
-    ])
-
-    bot.dialog('/recipeDialog', 
-        [
-            s => { s.send("recipe dialog"); } 
-    ])
-
-
-// Build out our hero card.  FPO right now.
-function createHeroCard(session) {
-    return new builder.HeroCard(session)
-        .title('CFS Options')
-        .subtitle('')
-        .text('Which would you like more information on?')
-        .images([
-            builder.CardImage.create(session, 'https://static1.squarespace.com/static/5732cbe2e707eb22d6917a10/5784083ed2b85790440e709e/578408562e69cf9abb13bc29/1468270679825/CFS_4c.png?format=500w')
-        ])
-        // In order to change our conversation based on button press, we post back a GUID messages
-        // to the bot.  This will not be seen by the user.  We 
-        .buttons([
-            builder.CardAction.postBack(session, '2bebe5f5-027c-4401-aaf6-c323a8a4c684', 'Menu'),
-            builder.CardAction.postBack(session, '428199ac-eecc-4921-b7f8-0578d7e9e1e5', 'Recipe')           
-        ]);
+// Bot global events
+bot.on('deleteUserData', m => { /* TODO: delete the user data */ });
+bot.on('contactRelationUpdate', m => {
+    if (m.action === 'add') {
+        var name = m.user ? m.user.name : null;
+        var reply = new builder.Message()
+            .address(m.address)
+            .text("Welcome %s... I can help you find Recipes and Menus.");
+        bot.send(reply);
+    } else {
+        // TODO: delete user data
     }
+});
 
-// Create REST endpoint.  Take the env variable if we are in Azure or use the default for loadl.
+bot.endConversationAction('goodbye', 'Goodbye to you.', { matches: /^goodbye/i });
+bot.beginDialogAction('help', '/helpDialog', { matches: /^help/i });
+
+// Begin dialogs
+// intents.onDefault('/helpDialog');
+dialogs.forEach(d => intents.matches(d.name, '/' + d.name + 'Dialog'));
+bot.dialog('/', intents);
+dialogs.forEach(d => d.configureDialog(bot));
+
+// Create REST endpoint.  
 var server = restify.createServer();
 server.listen(process.env.PORT || 3978, function() {
     console.log('%s listening at %s', server.name, server.url);
