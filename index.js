@@ -22,7 +22,7 @@ var luisEndpoint = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/5e
 var intents = new builder.IntentDialog({
     recognizers: [
         specialRec,
-        new builder.LuisRecognizer(luisEndpoint || process.env.LUIS_ENDPOINT)
+        new builder.LuisRecognizer(process.env.LUIS_ENDPOINT || luisEndpoint)
     ],
     intentThreshold: 0.5,
     recognizeOrder: builder.RecognizeOrder.series
