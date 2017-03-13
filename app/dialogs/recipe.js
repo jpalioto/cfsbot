@@ -1,21 +1,20 @@
 const builder = require('botbuilder');
+const cfsApi  = require('../utilities/apihandler.js');
+const resources = require('../utilities/resources.js')
+
+function parseResult(res)
+{
+    // TODO: Add parsing logic here as required.  For now, return the result.
+    return res;
+}
 
 module.exports = function (bot) {
     bot.dialog('/recipeDialog', 
     [
         s => 
         { 
-            builder.Prompts.choice(s,'Which recipe?', 'A|B|C');
-            
-        },
-        (s,r) =>
-        {
-            if( r.response.entity )
-            {           
-                var choice = r.response.entity;
-                s.send('You chose ' + choice);
-                s.endDialog();
-            }
-        }    
+            var recipe = cfsApi.callApi('recipe', '1', parseResult);
+            recipe.then( r => {s.send(r);} );
+        }  
     ]);
 };

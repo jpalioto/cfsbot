@@ -8,7 +8,11 @@ module.exports =
     {
         var rootLoc =  process.env.CFS_ENDPOINT || endpoints.devRootLoc;
 
-        var loc = rootLoc + root + (args ? args : '');
+        // Make sure we have a trailing slash
+        rootLoc = rootLoc.replace(/\/?$/, '/');
+
+        // add in our argument
+        var loc = rootLoc + root + (args ? '/' + args : '');
 
         var p = rp(loc)
             .then(function (result) {

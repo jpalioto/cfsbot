@@ -1,6 +1,5 @@
 const builder = require('botbuilder');
 const cfsApi  = require('../utilities/apihandler.js');
-
 const resources = require('../utilities/resources.js')
 
 function parseResult(res)
