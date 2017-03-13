@@ -1,5 +1,6 @@
 const rp = require('request-promise')
 const endpoints = require('./endpoints.js')
+const resources = require('./resources.js')
 
 module.exports = 
 {
@@ -14,7 +15,8 @@ module.exports =
                 return JSON.parse(result);
             })
             .catch(function (err) {
-                // Crawling failed...
+                console.log(resources.apiError, loc, err.message);
+                throw err;
             });
     }
 }
