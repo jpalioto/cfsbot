@@ -58,8 +58,8 @@ bot.beginDialogAction('help', '/helpDialog', { matches: /^help/i });
 // Begin dialogs
 // intents.onDefault('/helpDialog');
 dialogs.forEach(d => intents.matches(d.name, '/' + d.name + 'Dialog'));
-bot.dialog('/', intents);
 dialogs.forEach(d => d.configureDialog(bot));
+bot.dialog('/', intents);
 
 // Create REST endpoint.  
 var server = restify.createServer();

@@ -4,19 +4,21 @@ const resources = require('./resources.js')
 
 module.exports = 
 {
-    callApi: function(root, args)
+    callApi: function(root, args, callback)
     {
         var rootLoc =  process.env.CFS_ENDPOINT || endpoints.devRootLoc;
 
         var loc = rootLoc + root + (args ? args : '');
 
-        return rp(loc)
+        var p = rp(loc)
             .then(function (result) {
-                return JSON.parse(result);
+                return callback(JSON.parse(result));
             })
             .catch(function (err) {
                 console.log(resources.apiError, loc, err.message);
                 throw err;
             });
+
+            return p;
     }
 }
