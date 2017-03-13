@@ -1,11 +1,11 @@
 const rp = require('request-promise')
+const endpoints = require('./endpoints.js')
 
 module.exports = 
 {
     callApi: function(root, args)
     {
-        var devRootLoc = 'http://chefsforseniorstest.azurewebsites.net/api/';
-        var rootLoc =  process.env.CFS_ENDPOINT || devRootLoc;
+        var rootLoc =  process.env.CFS_ENDPOINT || endpoints.devRootLoc;
 
         var loc = rootLoc + root + (args ? args : '');
 

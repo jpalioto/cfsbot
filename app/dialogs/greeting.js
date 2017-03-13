@@ -6,7 +6,7 @@ module.exports = function (bot) {
     [
         s => 
         { 
-            s.send("Welcome to CFS!");
+            s.send("Welcome to CFS!  Ask me about menus and recipies.");
             var card = createHeroCard(s);
             var msg = new builder.Message(s).addAttachment(card);
             s.send(msg);

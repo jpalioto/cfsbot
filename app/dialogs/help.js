@@ -5,7 +5,7 @@ module.exports = function (bot) {
     [
         s => 
         { 
-            s.send('Help dialog');
+            s.send('This bot can help you with Menus and Recipies.');
             s.endDialog();
         }    
     ]);

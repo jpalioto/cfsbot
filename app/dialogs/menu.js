@@ -1,7 +1,7 @@
 const builder = require('botbuilder');
 const cfsApi  = require('../utilities/apihandler.js');
 
-const menuPrompts = ['What menu item would you like ingredients for?']
+const resources = require('../utilities/resources.js')
 
 module.exports = function (bot) {
     bot.dialog('/menuDialog', 
@@ -20,7 +20,7 @@ module.exports = function (bot) {
                 });
 
                 builder.Prompts.choice(s, 
-                    'Which menu item would you like ingredients for?', 
+                    resources.menuIngredients, 
                     mealItems.join('|'),
                     {
                         listStyle: builder.ListStyle.list

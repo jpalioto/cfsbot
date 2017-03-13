@@ -1,15 +1,27 @@
-var builder   = require('botbuilder');
-var restify   = require('restify');
-var _         = require('lodash');
-var specialRec = require('./app/recognizers/special.js');
+var builder   = require('botbuilder');       // Include the bot framework
+var restify   = require('restify');          // Used to expose bot to REST endpoint
+var _         = require('lodash');           // Utility
 
+// This is where we recgonize codes that come back from the herocard buttons.
+var specialRec = require('./app/recognizers/special.js');  
+
+// API Endpoints
+var endpoints  = require('./app/utilities/endpoints.js');
+
+// String resources
+var resources = require('./app/utilities/resources.js');
+
+// Chat connector will enable many endpoints like Teams, Skype
 var connector = new builder.ChatConnector({
     appId: process.env.CFS_APP_ID,
     appPassword: process.env.CFS_APP_PASSWORD
 });
+
+// The main bot
 var bot       = new builder.UniversalBot(connector);
 
-
+// List of our dialogs.  Dialogs trees must be named nameDialog.  For example, menuDialog.
+// Configure each dialog by requiring it's implementation and giving it a name to start it later.
 var dialogs   = ['greeting', 'special', 'menu', 'recipe']
     .map(d => ({
         name: d,
@@ -17,12 +29,10 @@ var dialogs   = ['greeting', 'special', 'menu', 'recipe']
     }));
 
 // LUIS Setup
-var luisKey      = '6e843ac045cb4497afa2e39230d62778';  // Dev Key
-var luisEndpoint = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/5e02a94a-8f45-498c-94c3-99e5884cd053?subscription-key=6e843ac045cb4497afa2e39230d62778&staging=true&verbose=true&q=';
 var intents = new builder.IntentDialog({
     recognizers: [
         specialRec,
-        new builder.LuisRecognizer(process.env.LUIS_ENDPOINT || luisEndpoint)
+        new builder.LuisRecognizer(process.env.LUIS_ENDPOINT || endpoints.luisDevEndpoint)
     ],
     intentThreshold: 0.5,
     recognizeOrder: builder.RecognizeOrder.series
@@ -35,14 +45,14 @@ bot.on('contactRelationUpdate', m => {
         var name = m.user ? m.user.name : null;
         var reply = new builder.Message()
             .address(m.address)
-            .text("Welcome %s... I can help you find Recipes and Menus.");
+            .text(resources.contactAdd);
         bot.send(reply);
     } else {
         // TODO: delete user data
     }
 });
 
-bot.endConversationAction('goodbye', 'Goodbye to you.', { matches: /^goodbye/i });
+bot.endConversationAction('goodbye', resources.helpText , { matches: /^goodbye/i });
 bot.beginDialogAction('help', '/helpDialog', { matches: /^help/i });
 
 // Begin dialogs
