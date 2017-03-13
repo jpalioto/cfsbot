@@ -22,7 +22,7 @@ var bot       = new builder.UniversalBot(connector);
 
 // List of our dialogs.  Dialogs trees must be named nameDialog.  For example, menuDialog.
 // Configure each dialog by requiring it's implementation and giving it a name to start it later.
-var dialogs   = ['greeting', 'special', 'menu', 'recipe']
+var dialogs   = ['greeting', 'special', 'menu', 'recipe', 'help']
     .map(d => ({
         name: d,
         configureDialog: require('./app/dialogs/' + d)
@@ -52,7 +52,7 @@ bot.on('contactRelationUpdate', m => {
     }
 });
 
-bot.endConversationAction('goodbye', resources.helpText , { matches: /^goodbye/i });
+bot.endConversationAction('goodbye', resources.goodbyeText, { matches: /^goodbye/i });
 bot.beginDialogAction('help', '/helpDialog', { matches: /^help/i });
 
 // Begin dialogs
