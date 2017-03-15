@@ -11,6 +11,9 @@ var endpoints  = require('./app/utilities/endpoints.js');
 // String resources
 var resources = require('./app/utilities/resources.js');
 
+// Common utilities
+var common    = require('./app/utilities/common.js');
+
 // Chat connector will enable many endpoints like Teams, Skype
 var connector = new builder.ChatConnector({
     appId: process.env.CFS_APP_ID,
@@ -25,8 +28,14 @@ var bot       = new builder.UniversalBot(connector);
 var dialogs   = ['greeting', 'special', 'menu', 'recipe', 'help']
     .map(d => ({
         name: d,
-        configureDialog: require('./app/dialogs/' + d)
+        configureDialog: require('./app/dialogs/' + d),
+        heroDialog: false
     }));
+
+// Configure a list of dialogs we want to have accessed from buttons on our HeroCard
+var heroDialogs = ['menu', 'recipe'];
+heroDialogs.forEach( hd => { _.find(dialogs, d => d.name === hd).heroDialog = true; } );
+
 
 // LUIS Setup
 var intents = new builder.IntentDialog({
@@ -57,9 +66,20 @@ bot.beginDialogAction('help', '/helpDialog', { matches: /^help/i });
 
 // Begin dialogs
 // intents.onDefault('/helpDialog');
-dialogs.forEach(d => intents.matches(d.name, '/' + d.name + 'Dialog'));
+dialogs.forEach(d => intents.matches(d.name, common.createDialogName(d.name)));
 dialogs.forEach(d => d.configureDialog(bot));
 bot.dialog('/', intents);
+
+// This will wire-up begin dialog actions for each dialog.  We can then
+// add those to the button dialogs on the HeroCard.
+dialogs.forEach(d => 
+{	
+    var dia = bot.dialogs[common.createDialogName(d.name)];
+	if(dia && d.heroDialog)
+    {
+        bot.beginDialogAction(d.name, common.createDialogName(d.name));
+    }
+});
 
 // Create REST endpoint.  
 var server = restify.createServer();
