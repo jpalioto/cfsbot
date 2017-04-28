@@ -25,7 +25,7 @@ var bot       = new builder.UniversalBot(connector);
 
 // List of our dialogs.  Dialogs trees must be named nameDialog.  For example, menuDialog.
 // Configure each dialog by requiring it's implementation and giving it a name to start it later.
-var dialogs   = ['greeting', 'special', 'menu', 'recipe', 'help']
+var dialogs   = ['greeting', 'special', 'menu', 'recipe', 'help', 'token', 'members']
     .map(d => ({
         name: d,
         configureDialog: require('./app/dialogs/' + d),
@@ -64,6 +64,9 @@ bot.on('contactRelationUpdate', m => {
 bot.endConversationAction('goodbye', resources.goodbyeText, { matches: /^goodbye/i });
 bot.beginDialogAction('help', '/helpDialog', { matches: /^help/i });
 
+// TODO: replace this with a LUIS intent
+bot.beginDialogAction('token', '/tokenDialog', {matches: /^token/i });
+
 // Begin dialogs
 // intents.onDefault('/helpDialog');
 dialogs.forEach(d => intents.matches(d.name, common.createDialogName(d.name)));
@@ -84,6 +87,6 @@ dialogs.forEach(d =>
 // Create REST endpoint.  
 var server = restify.createServer();
 server.listen(process.env.PORT || 3978, function() {
-    console.log('%s listening at %s', server.name, server.url);
+    console.log(`${server.name} listening at ${server.url}`);
 });
 server.post('/api/messages', connector.listen());

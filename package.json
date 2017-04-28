@@ -20,8 +20,11 @@
   "dependencies": {
     "botbuilder": "^3.7.0",
     "lodash": "^4.17.4",
+    "qs": "^6.4.0",
+    "query-string": "^4.3.4",
     "request-promise": "^4.1.1",
     "require-promise": "^1.0.1",
-    "restify": "^4.3.0"
+    "restify": "^4.3.0",
+    "swagger-client": "^3.0.7"
   }
 }
